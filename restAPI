@@ -1,0 +1,111 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+import java.net.*;
+import java.io.*;
+
+public class RESTForm extends JFrame {
+    
+    // Declare variables for the form fields
+    private JTextField field1;
+    private JTextField field2;
+    private JTextField field3;
+    private JTextField field4;
+    private JTextField field5;
+    private JTextField field6;
+    private JTextField field7;
+    private JTextField field8;
+    private JTextField field9;
+    private JTextField field10;
+    private JTextField field11;
+    private JTextField field12;
+
+    public RESTForm() {
+        super("REST Form");
+
+        // Create the form labels
+        JLabel label1 = new JLabel("Field 1:");
+        JLabel label2 = new JLabel("Field 2:");
+        JLabel label3 = new JLabel("Field 3:");
+        JLabel label4 = new JLabel("Field 4:");
+        JLabel label5 = new JLabel("Field 5:");
+        JLabel label6 = new JLabel("Field 6:");
+        JLabel label7 = new JLabel("Field 7:");
+        JLabel label8 = new JLabel("Field 8:");
+        JLabel label9 = new JLabel("Field 9:");
+        JLabel label10 = new JLabel("Field 10:");
+        JLabel label11 = new JLabel("Field 11:");
+        JLabel label12 = new JLabel("Field 12:");
+
+        // Create the form fields
+        field1 = new JTextField(20);
+        field2 = new JTextField(20);
+        field3 = new JTextField(20);
+        field4 = new JTextField(20);
+        field5 = new JTextField(20);
+        field6 = new JTextField(20);
+        field7 = new JTextField(20);
+        field8 = new JTextField(20);
+        field9 = new JTextField(20);
+        field10 = new JTextField(20);
+        field11 = new JTextField(20);
+        field12 = new JTextField(20);
+
+        // Set the form layout
+        setLayout(new GridLayout(13, 2));
+
+        // Add the form labels and fields to the form
+        add(label1);
+        add(field1);
+        add(label2);
+        add(field2);
+        add(label3);
+        add(field3);
+        add(label4);
+        add(field4);
+        add(label5);
+        add(field5);
+        add(label6);
+        add(field6);
+        add(label7);
+        add(field7);
+        add(label8);
+        add(field8);
+        add(label9);
+        add(field9);
+        add(label10);
+        add(field10);
+        add(label11);
+        add(field11);
+        add(label12);
+        add(field12);
+
+        // Set the form size and visibility
+        setSize(400, 400);
+        setVisible(true);
+
+        // Use a separate thread to handle the REST messages from the C# application
+        Thread thread = new Thread(new RESTHandler());
+        thread.start();
+    }
+
+    private class RESTHandler implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                // Set up the REST endpoint URL
+                String url = "http://localhost:8080/rest/data";
+
+                // Set up the REST request headers
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+
+                // Make the REST request and get the response
+                String response = executeRequest(url, headers);
+
+                // Parse the response JSON and set the form fields
+                JSONObject json = new JSONObject(response);
+                field1.setText(json.getString("field1"));
+                field2.setText(json.getString("field2"));
+                field3.setText(json.getString("field3"));
