@@ -1,0 +1,127 @@
+import javax.swing.*;
+import java.awt.*;
+import java.util.*;
+import java.net.*;
+import java.io.*;
+import java.sql.*;
+
+public class OracleRESTForm extends JFrame {
+
+    // Declare variables for the form fields
+    private JTextField nameField;
+    private JTextField emailField;
+    private JTextField phoneField;
+
+    // Declare variables for the database connection
+    private Connection connection;
+
+    public OracleRESTForm() {
+        super("Oracle REST Form");
+
+        // Create the form labels
+        JLabel nameLabel = new JLabel("Name:");
+        JLabel emailLabel = new JLabel("Email:");
+        JLabel phoneLabel = new JLabel("Phone:");
+
+        // Create the form fields
+        nameField = new JTextField(20);
+        emailField = new JTextField(20);
+        phoneField = new JTextField(20);
+
+        // Set the form layout
+        setLayout(new GridLayout(4, 2));
+
+        // Add the form labels and fields to the form
+        add(nameLabel);
+        add(nameField);
+        add(emailLabel);
+        add(emailField);
+        add(phoneLabel);
+        add(phoneField);
+
+        // Set the form size and visibility
+        setSize(400, 200);
+        setVisible(true);
+
+        // Connect to the Oracle database
+        connectToDatabase();
+
+        // Use a separate thread to handle the REST messages from the third-party application
+        Thread thread = new Thread(new RESTHandler());
+        thread.start();
+    }
+
+    private void connectToDatabase() {
+        try {
+            // Load the Oracle JDBC driver
+            Class.forName("oracle.jdbc.driver.OracleDriver");
+
+            // Set up the database connection parameters
+            String url = "jdbc:oracle:thin:@localhost:1521:XE";
+            String user = "username";
+            String password = "password";
+
+            // Connect to the database
+            connection = DriverManager.getConnection(url, user, password);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class RESTHandler implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                // Set up the REST endpoint URL
+                String url = "http://localhost:8080/rest/data";
+
+                // Set up the REST request headers
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Content-Type", "application/json");
+
+                // Make the REST request and get the response
+                String response = executeRequest(url, headers);
+
+                // Parse the response JSON and get the data
+                JSONObject json = new JSONObject(response);
+                String name = json.getString("name");
+                String email = json.getString("email");
+                String phone = json.getString("phone");
+
+                // Set the form fields
+                nameField.setText(name);
+                emailField.setText(email);
+                phoneField.setText(phone);
+
+                // Insert the data into the database
+                insertDataIntoDatabase(name, email, phone);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void insertDataIntoDatabase(String name, String email, String phone) {
+            try {
+                // Set up the SQL query to insert the data
+                String sql = "INSERT INTO contacts (name, email, phone) VALUES (?, ?, ?)";
+
+                // Prepare the SQL statement
+                PreparedStatement statement = connection.prepareStatement(sql);
+
+                // Set the parameter values for the SQL statement
+                statement.setString(1, name);
+                statement.setString(2, email);
+                statement.setString(3, phone);
+
+                // Execute the SQL statement
+                statement.executeUpdate();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String executeRequest
